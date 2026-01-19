@@ -46,11 +46,19 @@
 3. 复制请求中的参数：`kps`、`sign` 和 `vcode`。【初步测试发现这个 Key 的值有效期在两个月左右】
 4. 将参数整理为以下格式：
    ```
-   user=张三; kps=abcdefg; sign=hijklmn; vcode=111111111;
+   user=账户1; kps=xxx; sign=xxx; vcode=xxx;&&user=账户2; kps=yyy; sign=yyy; vcode=yyy;
    ```
 
-   > `user` 字段为用户名，可随意填写。多个账户可用 **回车或 && 分隔**。
-   >
+   或使用换行分隔：
+   ```
+   user=账户1; kps=xxx; sign=xxx; vcode=xxx;
+   user=账户2; kps=yyy; sign=yyy; vcode=yyy;
+   ```
+
+   > **说明**：
+   > - `user` 字段为用户名，可随意填写
+   > - 多个账户可用 `&&` 或 **换行** 分隔
+   > - 代码会自动移除空格，格式灵活可调
 
 #### 🔐 添加到 GitHub Secrets
 

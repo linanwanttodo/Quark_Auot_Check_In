@@ -1,9 +1,7 @@
 import os 
 import re 
 import sys 
-import requests 
-
-cookie_list = os.getenv("COOKIE_QUARK").split('\n|&&')
+import requests
 
 # 替代 notify 功能
 def send(title, message):
