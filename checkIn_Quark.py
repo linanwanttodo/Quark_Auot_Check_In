@@ -61,9 +61,14 @@ class Quark:
             "sign": self.param.get('sign'),
             "vcode": self.param.get('vcode')
         }
-        response = requests.get(url=url, params=querystring).json()
-        #print(response)
-        if response.get("data"):
+        try:
+            resp = requests.get(url=url, params=querystring, timeout=10)
+            resp.raise_for_status()
+            response = resp.json()
+        except Exception:
+            return False
+
+        if response and response.get("data"):
             return response["data"]
         else:
             return False
@@ -82,12 +87,17 @@ class Quark:
             "vcode": self.param.get('vcode')
         }
         data = {"sign_cyclic": True}
-        response = requests.post(url=url, json=data, params=querystring).json()
-        #print(response)
-        if response.get("data"):
+        try:
+            resp = requests.post(url=url, json=data, params=querystring, timeout=10)
+            resp.raise_for_status()
+            response = resp.json()
+        except Exception:
+            return False, "请求失败或返回数据异常"
+
+        if response and response.get("data"):
             return True, response["data"]["sign_daily_reward"]
         else:
-            return False, response["message"]
+            return False, response.get("message", "未知错误")
 
     def queryBalance(self):
         '''
@@ -98,12 +108,17 @@ class Quark:
             "moduleCode": "1f3563d38896438db994f118d4ff53cb",
             "kps": self.param.get('kps'),
         }
-        response = requests.get(url=url, params=querystring).json()
-        # print(response)
-        if response.get("data"):
+        try:
+            resp = requests.get(url=url, params=querystring, timeout=10)
+            resp.raise_for_status()
+            response = resp.json()
+        except Exception:
+            return "请求失败或返回数据异常"
+
+        if response and response.get("data"):
             return response["data"]["balance"]
         else:
-            return response["msg"]
+            return response.get("msg", "未知错误")
 
     def do_sign(self):
         '''
@@ -137,8 +152,8 @@ class Quark:
                 else:
                     log += f"❌ 签到异常: {sign_return}\n"
         else:
-            # log += f"❌ 签到异常: 获取成长信息失败\n"
-            raise Exception("❌ 签到异常: 获取成长信息失败")  # 适用于单账号情形，当 cookie 值失效后直接报错，方便通过 github action 的操作系统来进行提醒 如果你使用的是多账号签到的话，不要跟进此更新
+            # 获取成长信息失败，返回错误日志（不要抛异常以免中断多账号流程）
+            return "❌ 签到异常: 获取成长信息失败"
 
         return log
 
@@ -154,22 +169,31 @@ def main():
 
     print("✅ 检测到共", len(cookie_quark), "个夸克账号\n")
 
-    i = 0
-    while i < len(cookie_quark):
-        # 获取user_data参数
-        user_data = {}  # 用户信息
-        for a in cookie_quark[i].replace(" ", "").split(';'):
-            if not a == '':
-                user_data.update({a[0:a.index('=')]: a[a.index('=') + 1:]})
-        # print(user_data)
+    for idx, raw in enumerate(cookie_quark):
         # 开始任务
-        log = f"🙍🏻‍♂️ 第{i + 1}个账号"
-        msg += log
-        # 登录
-        log = Quark(user_data).do_sign()
-        msg += log + "\n"
+        msg += f"🙍🏻‍♂️ 第{idx + 1}个账号"
 
-        i += 1
+        # 解析 user_data，遇到格式错误则跳过该账号
+        user_data = {}
+        try:
+            segments = raw.replace(" ", "").split(";")
+            for a in segments:
+                if not a:
+                    continue
+                if '=' not in a:
+                    raise ValueError(f"无效的 cookie 段: {a}")
+                k, v = a.split('=', 1)
+                user_data[k] = v
+        except Exception as e:
+            msg += f" ❌ cookie 解析失败: {e}\n\n"
+            continue
+
+        # 登录并执行签到
+        try:
+            log = Quark(user_data).do_sign()
+            msg += log + "\n"
+        except Exception as err:
+            msg += f"❌ 该账号错误: {err}\n"
 
     # print(msg)
 
