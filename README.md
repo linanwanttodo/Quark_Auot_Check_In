@@ -43,16 +43,10 @@
 
 1. 打开手机抓包工具，访问夸克网盘签到页。
 2. 找到接口 `https://drive-m.quark.cn/1/clouddrive/capacity/growth/info` 的请求信息。
-3. 复制请求中的参数：`kps`、`sign` 和 `vcode`。【初步测试发现这个 Key 的值有效期在两个月左右】
+3. 直接复制完整url请求，`kps`、`sign` 和 `vcode`这些参数会自动提取【初步测试发现这个 Key 的值有效期在两个月左右】
 4. 将参数整理为以下格式：
    ```
-   user=账户1; kps=xxx; sign=xxx; vcode=xxx;&&user=账户2; kps=yyy; sign=yyy; vcode=yyy;
-   ```
-
-   或使用换行分隔：
-   ```
-   user=账户1; kps=xxx; sign=xxx; vcode=xxx;
-   user=账户2; kps=yyy; sign=yyy; vcode=yyy;
+account1=https://drive-m.quark.cn/1/clouddrive.......
    ```
 
    > **说明**：
@@ -64,8 +58,8 @@
 
 1. 打开 Fork 后的仓库，进入 **Settings -> Secrets and variables -> Actions**。
 2. 点击 **Repository secrets** 分区下的 **New repository secret** 按钮。
-3. 创建名为 `COOKIE_QUARK` 的 Secret。
-4. 将整理好的 Cookie 信息粘贴到 "Secret" 输入框中并保存。
+3. 创建名为 `ACCOUNT1` 的 Secret。多个就以此类推ACCOUNT2
+4. 将完整的url请求信息粘贴到 "Secret" 输入框中并保存。
 
 ---
 
